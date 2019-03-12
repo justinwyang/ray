@@ -529,6 +529,7 @@ class Trial(object):
             "sync_function": self.sync_function,
             "last_result": self.last_result
         }
+        
 
         for key, value in pickle_data.items():
             state[key] = binary_to_hex(cloudpickle.dumps(value))
