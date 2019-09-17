@@ -2346,6 +2346,8 @@ def get(object_ids):
                 last_task_error_raise_time = time.time()
                 if isinstance(value, ray.exceptions.UnreconstructableError):
                     worker.dump_object_store_memory_usage()
+                logger.info("Encountered exception when attempting to retreive "
+                            "object with ID {}.".format(values[i]))
                 raise value
 
         # Run post processors.
