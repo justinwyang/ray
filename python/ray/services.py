@@ -135,7 +135,7 @@ def get_address_info_from_redis_helper(redis_address,
 
     client_table = ray.state._parse_client_table(redis_client)
     if len(client_table) == 0:
-        raise Exception(
+        raise ValueError(
             "Redis has started but no raylets have registered yet.")
 
     relevant_client = None
@@ -147,7 +147,7 @@ def get_address_info_from_redis_helper(redis_address,
             relevant_client = client_info
             break
     if relevant_client is None:
-        raise Exception(
+        raise ValueError(
             "Redis has started but no raylets have registered yet.")
 
     return {
@@ -198,7 +198,7 @@ def remaining_processes_alive():
             ray.init().
     """
     if ray.worker._global_node is None:
-        raise Exception("This process is not in a position to determine "
+        raise ValueError("This process is not in a position to determine "
                         "whether all processes are alive or not.")
     return ray.worker._global_node.remaining_processes_alive()
 
@@ -448,7 +448,7 @@ def wait_for_redis_to_start(redis_ip_address,
         else:
             break
     if counter == num_retries:
-        raise Exception("Unable to connect to Redis. If the Redis instance is "
+        raise ConnectionError("Unable to connect to Redis. If the Redis instance is "
                         "on a different machine, check that your firewall is "
                         "configured properly.")
 
@@ -511,7 +511,7 @@ def check_version_info(redis_client):
                          "    Python: " + version_info[1] + "\n"
                          "    Pyarrow: " + str(version_info[2]))
         if version_info[:2] != true_version_info[:2]:
-            raise Exception(error_message)
+            raise ValueError(error_message)
         else:
             logger.warning(error_message)
 
@@ -567,7 +567,7 @@ def start_redis(node_ip_address,
     if redis_shard_ports is None:
         redis_shard_ports = num_redis_shards * [None]
     elif len(redis_shard_ports) != num_redis_shards:
-        raise Exception("The number of Redis shard ports does not match the "
+        raise ValueError("The number of Redis shard ports does not match the "
                         "number of Redis shards.")
 
     processes = []
@@ -578,7 +578,7 @@ def start_redis(node_ip_address,
         if password is not None:
             # TODO(pschafhalter) remove this once credis supports
             # authenticating Redis ports
-            raise Exception("Setting the `redis_password` argument is not "
+            raise ValueError("Setting the `redis_password` argument is not "
                             "supported in credis. To run Ray with "
                             "password-protected Redis ports, ensure that "
                             "the environment variable `RAY_USE_NEW_GCS=off`.")
@@ -788,7 +788,7 @@ def _start_redis_instance(executable,
         port = new_port()
         counter += 1
     if counter == num_retries:
-        raise Exception("Couldn't start Redis. Check log files: {} {}".format(
+        raise ConnectionError("Couldn't start Redis. Check log files: {} {}".format(
             stdout_file.name, stderr_file.name))
 
     # Create a Redis client just for configuring Redis.
@@ -1051,7 +1051,7 @@ def start_raylet(redis_address,
     config_str = ",".join(["{},{}".format(*kv) for kv in config.items()])
 
     if use_valgrind and use_profiler:
-        raise Exception("Cannot use valgrind and profiler at the same time.")
+        raise ValueError("Cannot use valgrind and profiler at the same time.")
 
     assert resource_spec.resolved()
     num_initial_workers = resource_spec.num_cpus
@@ -1243,7 +1243,7 @@ def determine_plasma_store_config(object_store_memory,
 
         # Do some sanity checks.
         if object_store_memory > system_memory:
-            raise Exception(
+            raise ValueError(
                 "The requested object store memory size is greater "
                 "than the total available memory.")
     else:
@@ -1252,7 +1252,7 @@ def determine_plasma_store_config(object_store_memory,
                        "plasma_directory is set.")
 
     if not os.path.isdir(plasma_directory):
-        raise Exception(
+        raise NotADirectoryError(
             "The file {} does not exist or is not a directory.".format(
                 plasma_directory))
 
@@ -1292,15 +1292,15 @@ def _start_plasma_store(plasma_store_memory,
             plasma store process.
     """
     if use_valgrind and use_profiler:
-        raise Exception("Cannot use valgrind and profiler at the same time.")
+        raise ValueError("Cannot use valgrind and profiler at the same time.")
 
     if huge_pages and not (sys.platform == "linux"
                            or sys.platform == "linux2"):
-        raise Exception("The huge_pages argument is only supported on "
+        raise Value("The huge_pages argument is only supported on "
                         "Linux.")
 
     if huge_pages and plasma_directory is None:
-        raise Exception("If huge_pages is True, then the "
+        raise ValueError("If huge_pages is True, then the "
                         "plasma_directory argument must be provided.")
 
     if not isinstance(plasma_store_memory, int):

@@ -302,7 +302,7 @@ class Worker(object):
         counter = 0
         while True:
             if counter == depth:
-                raise Exception("Ray exceeded the maximum number of classes "
+                raise RecursionError("Ray exceeded the maximum number of classes "
                                 "that it will recursively serialize when "
                                 "attempting to serialize an object of "
                                 "type {}.".format(type(value)))
@@ -890,7 +890,7 @@ class Worker(object):
         """
         for i in range(len(object_ids)):
             if isinstance(outputs[i], ray.actor.ActorHandle):
-                raise Exception("Returning an actor handle from a remote "
+                raise TypeError("Returning an actor handle from a remote "
                                 "function is not allowed).")
             if outputs[i] is ray.experimental.no_return.NoReturn:
                 if not self.plasma_client.contains(
@@ -1153,7 +1153,7 @@ def get_gpu_ids():
         A list of GPU IDs.
     """
     if _mode() == LOCAL_MODE:
-        raise Exception("ray.get_gpu_ids() currently does not work in LOCAL "
+        raise ValueError("ray.get_gpu_ids() currently does not work in LOCAL "
                         "MODE.")
 
     all_resource_ids = global_worker.raylet_client.resource_ids()
@@ -1180,7 +1180,7 @@ def get_resource_ids():
         resource reserved for this worker.
     """
     if _mode() == LOCAL_MODE:
-        raise Exception(
+        raise ValueError(
             "ray.get_resource_ids() currently does not work in LOCAL "
             "MODE.")
 
@@ -1196,7 +1196,7 @@ def get_webui_url():
         The URL of the web UI as a string.
     """
     if _global_node is None:
-        raise Exception("Ray has not been initialized/connected.")
+        raise ValueError("Ray has not been initialized/connected.")
     return _global_node.webui_url
 
 
@@ -1451,7 +1451,7 @@ def init(address=None,
                          "called.")
             return
         else:
-            raise Exception("Perhaps you called ray.init twice by accident? "
+            raise ValueError("Perhaps you called ray.init twice by accident? "
                             "This error can be suppressed by passing in "
                             "'ignore_reinit_error=True' or by calling "
                             "'ray.shutdown()' prior to 'ray.init()'.")
@@ -1502,43 +1502,43 @@ def init(address=None,
     else:
         # In this case, we are connecting to an existing cluster.
         if num_cpus is not None or num_gpus is not None:
-            raise Exception("When connecting to an existing cluster, num_cpus "
+            raise ValueError("When connecting to an existing cluster, num_cpus "
                             "and num_gpus must not be provided.")
         if resources is not None:
-            raise Exception("When connecting to an existing cluster, "
+            raise ValueError("When connecting to an existing cluster, "
                             "resources must not be provided.")
         if num_redis_shards is not None:
-            raise Exception("When connecting to an existing cluster, "
+            raise ValueError("When connecting to an existing cluster, "
                             "num_redis_shards must not be provided.")
         if redis_max_clients is not None:
-            raise Exception("When connecting to an existing cluster, "
+            raise ValueError("When connecting to an existing cluster, "
                             "redis_max_clients must not be provided.")
         if memory is not None:
-            raise Exception("When connecting to an existing cluster, "
+            raise ValueError("When connecting to an existing cluster, "
                             "memory must not be provided.")
         if object_store_memory is not None:
-            raise Exception("When connecting to an existing cluster, "
+            raise ValueError("When connecting to an existing cluster, "
                             "object_store_memory must not be provided.")
         if redis_max_memory is not None:
-            raise Exception("When connecting to an existing cluster, "
+            raise ValueError("When connecting to an existing cluster, "
                             "redis_max_memory must not be provided.")
         if plasma_directory is not None:
-            raise Exception("When connecting to an existing cluster, "
+            raise ValueError("When connecting to an existing cluster, "
                             "plasma_directory must not be provided.")
         if huge_pages:
-            raise Exception("When connecting to an existing cluster, "
+            raise ValueError("When connecting to an existing cluster, "
                             "huge_pages must not be provided.")
         if temp_dir is not None:
-            raise Exception("When connecting to an existing cluster, "
+            raise ValueError("When connecting to an existing cluster, "
                             "temp_dir must not be provided.")
         if plasma_store_socket_name is not None:
-            raise Exception("When connecting to an existing cluster, "
+            raise ValueError("When connecting to an existing cluster, "
                             "plasma_store_socket_name must not be provided.")
         if raylet_socket_name is not None:
-            raise Exception("When connecting to an existing cluster, "
+            raise ValueError("When connecting to an existing cluster, "
                             "raylet_socket_name must not be provided.")
         if _internal_config is not None:
-            raise Exception("When connecting to an existing cluster, "
+            raise ValueError("When connecting to an existing cluster, "
                             "_internal_config must not be provided.")
 
         # In this case, we only need to connect the node.
@@ -1965,7 +1965,7 @@ def connect(node,
             worker_dict["stderr_file"] = os.path.abspath(log_stderr_file.name)
         worker.redis_client.hmset(b"Workers:" + worker.worker_id, worker_dict)
     else:
-        raise Exception("This code should be unreachable.")
+        raise ValueError("This code should be unreachable.")
 
     # Create an object store client.
     worker.plasma_client = thread_safe_client(
@@ -2469,12 +2469,12 @@ def wait(object_ids, num_returns=1, timeout=None):
             return [], []
 
         if len(object_ids) != len(set(object_ids)):
-            raise Exception("Wait requires a list of unique object IDs.")
+            raise ValueError("Wait requires a list of unique object IDs.")
         if num_returns <= 0:
-            raise Exception(
+            raise ValueError(
                 "Invalid number of objects to return %d." % num_returns)
         if num_returns > len(object_ids):
-            raise Exception("num_returns cannot be greater than the number "
+            raise ValueError("num_returns cannot be greater than the number "
                             "of objects provided to ray.wait.")
 
         timeout = timeout if timeout is not None else 10**6
@@ -2518,7 +2518,7 @@ def make_decorator(num_return_vals=None,
                 or is_cython(function_or_class)):
             # Set the remote function default resources.
             if max_reconstructions is not None:
-                raise Exception("The keyword 'max_reconstructions' is not "
+                raise ValueError("The keyword 'max_reconstructions' is not "
                                 "allowed for remote functions.")
 
             return ray.remote_function.RemoteFunction(
@@ -2527,17 +2527,17 @@ def make_decorator(num_return_vals=None,
 
         if inspect.isclass(function_or_class):
             if num_return_vals is not None:
-                raise Exception("The keyword 'num_return_vals' is not allowed "
+                raise ValueError("The keyword 'num_return_vals' is not allowed "
                                 "for actors.")
             if max_calls is not None:
-                raise Exception("The keyword 'max_calls' is not allowed for "
+                raise ValueError("The keyword 'max_calls' is not allowed for "
                                 "actors.")
 
             return worker.make_actor(function_or_class, num_cpus, num_gpus,
                                      memory, object_store_memory, resources,
                                      max_reconstructions)
 
-        raise Exception("The @ray.remote decorator must be applied to "
+        raise ValueError("The @ray.remote decorator must be applied to "
                         "either a function or to a class.")
 
     return decorator
@@ -2628,7 +2628,7 @@ def remote(*args, **kwargs):
     num_gpus = kwargs["num_gpus"] if "num_gpus" in kwargs else None
     resources = kwargs.get("resources")
     if not isinstance(resources, dict) and resources is not None:
-        raise Exception("The 'resources' keyword argument must be a "
+        raise TypeError("The 'resources' keyword argument must be a "
                         "dictionary, but received type {}.".format(
                             type(resources)))
     if resources is not None:

@@ -41,7 +41,7 @@ def check_no_existing_redis_clients(node_ip_address, redis_client):
             continue
 
         if ray.utils.decode(info[b"node_ip_address"]) == node_ip_address:
-            raise Exception("This Redis instance is already connected to "
+            raise ValueError("This Redis instance is already connected to "
                             "clients with this IP address.")
 
 
@@ -248,7 +248,7 @@ def start(node_ip_address, redis_address, address, redis_port,
     try:
         resources = json.loads(resources)
     except Exception:
-        raise Exception("Unable to parse the --resources argument using "
+        raise ValueError("Unable to parse the --resources argument using "
                         "json.loads. Try using a format like\n\n"
                         "    --resources='{\"CustomResource1\": 3, "
                         "\"CustomReseource2\": 2}'")
@@ -288,14 +288,14 @@ def start(node_ip_address, redis_address, address, redis_port,
                 num_redis_shards = len(redis_shard_ports)
             # Check that the arguments match.
             if len(redis_shard_ports) != num_redis_shards:
-                raise Exception("If --redis-shard-ports is provided, it must "
+                raise ValueError("If --redis-shard-ports is provided, it must "
                                 "have the form '6380,6381,6382', and the "
                                 "number of ports provided must equal "
                                 "--num-redis-shards (which is 1 if not "
                                 "provided)")
 
         if redis_address is not None:
-            raise Exception("If --head is passed in, a Redis server will be "
+            raise ValueError("If --head is passed in, a Redis server will be "
                             "started, so a Redis address should not be "
                             "provided.")
 
@@ -337,22 +337,22 @@ def start(node_ip_address, redis_address, address, redis_port,
     else:
         # Start Ray on a non-head node.
         if redis_port is not None:
-            raise Exception("If --head is not passed in, --redis-port is not "
+            raise ValueError("If --head is not passed in, --redis-port is not "
                             "allowed")
         if redis_shard_ports is not None:
-            raise Exception("If --head is not passed in, --redis-shard-ports "
+            raise ValueError("If --head is not passed in, --redis-shard-ports "
                             "is not allowed")
         if redis_address is None:
-            raise Exception("If --head is not passed in, --redis-address must "
+            raise ValueError("If --head is not passed in, --redis-address must "
                             "be provided.")
         if num_redis_shards is not None:
-            raise Exception("If --head is not passed in, --num-redis-shards "
+            raise ValueError("If --head is not passed in, --num-redis-shards "
                             "must not be provided.")
         if redis_max_clients is not None:
-            raise Exception("If --head is not passed in, --redis-max-clients "
+            raise ValueError("If --head is not passed in, --redis-max-clients "
                             "must not be provided.")
         if include_webui:
-            raise Exception("If --head is not passed in, the --include-webui "
+            raise ValueError("If --head is not passed in, the --include-webui "
                             "flag is not relevant.")
         if include_java is not None:
             raise ValueError("--include-java should only be set for the head "

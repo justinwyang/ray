@@ -97,7 +97,7 @@ def test_actor_init_error_propagated(ray_start_regular):
     class Actor(object):
         def __init__(self, error=False):
             if error:
-                raise Exception("oops")
+                raise TypeError("oops")
 
         def foo(self):
             return "OK"
@@ -1544,12 +1544,12 @@ def setup_counter_actor(test_checkpoint=False,
 
         def __ray_save__(self):
             if self.save_exception:
-                raise Exception("Exception raised in checkpoint save")
+                raise RayError("Exception raised in checkpoint save")
             return self.x, self.save_exception
 
         def __ray_restore__(self, checkpoint):
             if self._resume_exception:
-                raise Exception("Exception raised in checkpoint resume")
+                raise RayError("Exception raised in checkpoint resume")
             self.x, self.save_exception = checkpoint
             self.num_inc_calls = 0
             self.restored = True
@@ -2503,7 +2503,7 @@ def test_checkpointing_save_exception(ray_start_regular,
     @ray.remote(max_reconstructions=2)
     class RemoteCheckpointableActor(ray_checkpointable_actor_cls):
         def save_checkpoint(self, actor_id, checkpoint_context):
-            raise Exception("Error during save")
+            raise RayError("Error during save")
 
     actor = RemoteCheckpointableActor.remote()
     # Call increase 3 times.
@@ -2547,7 +2547,7 @@ def test_checkpointing_load_exception(ray_start_regular,
     @ray.remote(max_reconstructions=2)
     class RemoteCheckpointableActor(ray_checkpointable_actor_cls):
         def load_checkpoint(self, actor_id, checkpoints):
-            raise Exception("Error during load")
+            raise RayError("Error during load")
 
     actor = RemoteCheckpointableActor.remote()
     # Call increase 3 times.
@@ -2647,10 +2647,10 @@ def test_init_exception_in_checkpointable_actor(ray_start_regular,
     @ray.remote
     class CheckpointableFailedActor(ray_checkpointable_actor_cls):
         def __init__(self):
-            raise Exception(error_message1)
+            raise RayError(error_message1)
 
         def fail_method(self):
-            raise Exception(error_message2)
+            raise RayError(error_message2)
 
         def should_checkpoint(self, checkpoint_context):
             return True

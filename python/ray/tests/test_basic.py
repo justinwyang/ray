@@ -1206,7 +1206,7 @@ def test_profiling_api(ray_start_2_cpus):
     start_time = time.time()
     while True:
         if time.time() - start_time > timeout_seconds:
-            raise Exception("Timed out while waiting for information in "
+            raise TimeoutError("Timed out while waiting for information in "
                             "profile table.")
         profile_data = ray.timeline()
         event_types = {event["cat"] for event in profile_data}

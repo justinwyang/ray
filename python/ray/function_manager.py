@@ -98,7 +98,7 @@ class FunctionDescriptor(object):
             else:
                 return cls(module_name, function_name, class_name)
         else:
-            raise Exception(
+            raise ValueError(
                 "Invalid input for FunctionDescriptor.from_bytes_list")
 
     @classmethod
@@ -391,7 +391,7 @@ class FunctionActorManager(object):
         # This is a placeholder in case the function can't be unpickled. This
         # will be overwritten if the function is successfully registered.
         def f():
-            raise Exception("This function was not imported properly.")
+            raise ImportError("This function was not imported properly.")
 
         # This function is called by ImportThread. This operation needs to be
         # atomic. Otherwise, there is race condition. Another thread may use
@@ -495,7 +495,7 @@ class FunctionActorManager(object):
         except Exception:
             logger.exception(
                 "Failed to load function %s.".format(function_name))
-            raise Exception(
+            raise ImportError(
                 "Function {} failed to be loaded from local code.".format(
                     function_descriptor))
 
@@ -666,7 +666,7 @@ class FunctionActorManager(object):
         except Exception:
             logger.exception(
                 "Failed to load actor_class %s.".format(class_name))
-            raise Exception(
+            raise ImportError(
                 "Actor {} failed to be imported from local code.".format(
                     class_name))
 
@@ -675,7 +675,7 @@ class FunctionActorManager(object):
             pass
 
         def temporary_actor_method(*xs):
-            raise Exception(
+            raise ImportError(
                 "The actor with name {} failed to be imported, "
                 "and so cannot execute this method.".format(actor_class_name))
 

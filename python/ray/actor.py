@@ -139,7 +139,7 @@ class ActorMethod(object):
         self._decorator = decorator
 
     def __call__(self, *args, **kwargs):
-        raise Exception("Actor methods cannot be called directly. Instead "
+        raise ValueError("Actor methods cannot be called directly. Instead "
                         "of running 'object.{}()', try "
                         "'object.{}.remote()'.".format(self._method_name,
                                                        self._method_name))
@@ -238,7 +238,7 @@ class ActorClass(object):
         Raises:
             Exception: Always.
         """
-        raise Exception("Actors cannot be instantiated directly. "
+        raise ValueError("Actors cannot be instantiated directly. "
                         "Instead of '{}()', use '{}.remote()'.".format(
                             self._class_name, self._class_name))
 
@@ -356,7 +356,7 @@ class ActorClass(object):
 
         worker = ray.worker.get_global_worker()
         if worker.mode is None:
-            raise Exception("Actors cannot be created before ray.init() "
+            raise ValueError("Actors cannot be created before ray.init() "
                             "has been called.")
 
         actor_id = ActorID.of(worker.current_job_id, worker.current_task_id,
@@ -817,7 +817,7 @@ def make_actor(cls, num_cpus, num_gpus, memory, object_store_memory, resources,
 
     if not (ray_constants.NO_RECONSTRUCTION <= max_reconstructions <=
             ray_constants.INFINITE_RECONSTRUCTION):
-        raise Exception("max_reconstructions must be in range [%d, %d]." %
+        raise ValueError("max_reconstructions must be in range [%d, %d]." %
                         (ray_constants.NO_RECONSTRUCTION,
                          ray_constants.INFINITE_RECONSTRUCTION))
 
@@ -838,7 +838,7 @@ def make_actor(cls, num_cpus, num_gpus, memory, object_store_memory, resources,
             """
             worker = ray.worker.global_worker
             if not isinstance(self, ray.actor.Checkpointable):
-                raise Exception(
+                raise ValueError(
                     "__ray_checkpoint__.remote() may only be called on actors "
                     "that implement ray.actor.Checkpointable")
             return worker._save_actor_checkpoint()
@@ -872,7 +872,7 @@ def exit_actor():
         sys.exit(0)
         assert False, "This process should have terminated."
     else:
-        raise Exception("exit_actor called on a non-actor worker.")
+        raise ValueError("exit_actor called on a non-actor worker.")
 
 
 ray.worker.global_worker.make_actor = make_actor

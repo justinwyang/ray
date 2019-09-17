@@ -107,7 +107,7 @@ def check_signature_supported(func, warn=False):
         if warn:
             logger.debug(message)
         else:
-            raise Exception(message)
+            raise ValueError(message)
 
     if has_kwonly_param:
         message = ("The function {} has a keyword only argument "
@@ -116,7 +116,7 @@ def check_signature_supported(func, warn=False):
         if warn:
             logger.debug(message)
         else:
-            raise Exception(message)
+            raise ValueError(message)
 
 
 def extract_signature(func, ignore_first=False):
@@ -135,7 +135,7 @@ def extract_signature(func, ignore_first=False):
 
     if ignore_first:
         if len(sig_params) == 0:
-            raise Exception("Methods must take a 'self' argument, but the "
+            raise ValueError("Methods must take a 'self' argument, but the "
                             "method '{}' does not have one.".format(
                                 func.__name__))
         sig_params = sig_params[1:]
@@ -186,14 +186,14 @@ def extend_args(function_signature, args, kwargs):
 
     for keyword_name in kwargs:
         if keyword_name not in keyword_names:
-            raise Exception("The name '{}' is not a valid keyword argument "
+            raise ValueError("The name '{}' is not a valid keyword argument "
                             "for the function '{}'.".format(
                                 keyword_name, function_name))
 
     # Fill in the remaining arguments.
     for skipped_name in arg_names[0:len(args)]:
         if skipped_name in kwargs:
-            raise Exception("Positional and keyword value provided for the "
+            raise ValueError("Positional and keyword value provided for the "
                             "argument '{}' for the function '{}'".format(
                                 keyword_name, function_name))
 
@@ -210,13 +210,13 @@ def extend_args(function_signature, args, kwargs):
                 # the last argument and it is a *args argument in which case it
                 # can be omitted.
                 if not is_positional:
-                    raise Exception("No value was provided for the argument "
+                    raise ValueError("No value was provided for the argument "
                                     "'{}' for the function '{}'.".format(
                                         keyword_name, function_name))
 
     no_positionals = len(arg_is_positionals) == 0 or not arg_is_positionals[-1]
     too_many_arguments = len(args) > len(arg_names) and no_positionals
     if too_many_arguments:
-        raise Exception("Too many arguments were passed to the function '{}'"
+        raise ValueError("Too many arguments were passed to the function '{}'"
                         .format(function_name))
     return args
